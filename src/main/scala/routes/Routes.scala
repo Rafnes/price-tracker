@@ -15,7 +15,13 @@ class Routes(service: PriceService) {
       for {
         pricePoint <- req.as[PricePoint]
         _ <- service.recordPrice(pricePoint)
-        resp <- Created(s"Получена цена для продукта ${pricePoint.productId}")
+        resp <- Created(s"Получена запись о продукте id${pricePoint.productId}")
+      } yield resp
+    case req@POST -> Root / "prices" / "batch_ingest" =>
+      for {
+        points <- req.as[List[PricePoint]]
+        _ <- service.recordPriceBatch(points)
+        resp <- Created(s"Получено записей о продуктах: ${points.size}")
       } yield resp
   }
 }

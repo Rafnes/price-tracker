@@ -4,6 +4,7 @@ import io.circe.Codec
 import io.circe.generic.semiauto.deriveCodec
 
 case class PricePoint(productId: String,
+                      productName: String,
                       storeName: String,
                       price: Double)
 
