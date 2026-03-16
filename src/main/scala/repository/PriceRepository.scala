@@ -1,7 +1,7 @@
 package repository
 
 import cats.effect.IO
-import domain.PricePoint
+import domain.{PricePoint, PriceStats}
 import doobie.Update
 import doobie.implicits.toSqlInterpolator
 import doobie.syntax.all.toConnectionIOOps
@@ -15,8 +15,17 @@ class PriceRepository(xa: Transactor[IO]) {
          """.update.run.transact(xa)
   }
 
-  def saveBatch(pricePoints: List[PricePoint]) : IO[Int] = {
+  def saveBatch(pricePoints: List[PricePoint]): IO[Int] = {
     val sqlStatement = "INSERT INTO prices (product_id, product_name, store_name, price) VALUES (?, ?, ?, ?)"
     Update[PricePoint](sqlStatement).updateMany(pricePoints).transact(xa)
+  }
+
+  def getStats(productId: String): IO[Option[PriceStats]] = {
+    sql"""
+         SELECT AVG(price), MAX(price), MIN(price)
+         FROM prices
+         WHERE product_id = $productId
+         """
+      .query[PriceStats].option.transact(xa)
   }
 }

@@ -1,7 +1,7 @@
 package service
 
 import cats.effect.IO
-import domain.PricePoint
+import domain.{PricePoint, PriceStats}
 import repository.PriceRepository
 
 class PriceService(repo: PriceRepository) {
@@ -30,8 +30,18 @@ class PriceService(repo: PriceRepository) {
     } yield s"Обработано ${points.size}, успешно: ${validPoints.size}, ошибок: ${errors.size}"
   }
 
-  private def validatePricePoint(pp: PricePoint) : Either[String, PricePoint] = {
+  private def validatePricePoint(pp: PricePoint): Either[String, PricePoint] = {
     if (pp.price <= 0) Left(s"Ошибка валидации: цена меньше или равна 0: id продукта: ${pp.productId}, цена: ${pp.price}, магазин ${pp.storeName}")
     else Right(pp)
+  }
+
+  def getPriceStats(productId: String): IO[Option[PriceStats]] = {
+    for {
+      result <- repo.getStats(productId)
+      _ <- result match {
+        case Some(stats) => IO.println(s"Получена статистика по ценам товар: id: $productId")
+        case None => IO.println(s"Статистика для продукта с id: $productId не найдена")
+      }
+    } yield result
   }
 }
