@@ -1,6 +1,7 @@
 package service
 
 import cats.effect.IO
+import cats.syntax.all.toTraverseOps
 import domain.{PricePoint, PriceStats}
 import repository.PriceRepository
 
@@ -21,6 +22,7 @@ class PriceService(repo: PriceRepository) {
     val (errors, validPoints) = points.map(validatePricePoint).partitionMap(identity)
 
     for {
+      _ <- errors.traverse(err => IO.println(s"Ошибка валидации: $err"))
       _ <- if (errors.nonEmpty) IO.println(s"Пропущено ошибочных записей: ${errors.size}")
       else IO.unit
 
@@ -31,7 +33,8 @@ class PriceService(repo: PriceRepository) {
   }
 
   private def validatePricePoint(pp: PricePoint): Either[String, PricePoint] = {
-    if (pp.price <= 0) Left(s"Ошибка валидации: цена меньше или равна 0: id продукта: ${pp.productId}, цена: ${pp.price}, магазин ${pp.storeName}")
+    if (pp.price <= 0) Left(s"Ошибка валидации: цена меньше или равна 0: id продукта: " +
+      s"${pp.productId}, цена: ${pp.price}, название: ${pp.productName}, магазин ${pp.storeName}")
     else Right(pp)
   }
 
