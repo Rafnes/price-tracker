@@ -1,0 +1,8 @@
+CREATE TABLE prices
+(
+    id SERIAL PRIMARY KEY,
+    product_id TEXT NOT NULL,
+    store_name TEXT NOT NULL,
+    price      DOUBLE PRECISION NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
